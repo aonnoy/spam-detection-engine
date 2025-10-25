@@ -133,9 +133,22 @@ class UniversalFormSecurityHandler {
       return;
     }
 
+    // 🔒 SECURITY: Capture and secure field descriptions before DOM tampering
+    const securityData = this.captureAndSecureFieldDescriptions(formElement);
+    config[securityData.propertyName] = securityData.securedDescriptions;
+    config._securityChecksum = securityData.checksum;
+
+    // 🔒 SECURITY: Also secure the form purpose attribute
+    const formPurposeSecurity = this.secureFormPurpose(formElement);
+    config[formPurposeSecurity.propertyName] =
+      formPurposeSecurity.securedPurpose;
+    config._purposeChecksum = formPurposeSecurity.checksum;
+
     console.log(`Universal Form Security: Setting up form "${config.formId}"`, {
       purpose: config.formPurpose,
       fieldsConfigured: fieldValidation.configuredFields,
+      securityLevel: "ENHANCED",
+      securedFields: Object.keys(securityData.securedDescriptions).length,
     });
 
     // Store form config
@@ -196,6 +209,249 @@ class UniversalFormSecurityHandler {
       errors: errors,
       configuredFields: configuredFields,
     };
+  }
+
+  // 🔒 SECURITY: Phase 1 & 2 - Capture and secure field descriptions
+  captureAndSecureFieldDescriptions(formElement) {
+    const securedDescriptions = {};
+    const originalDescriptions = {};
+    const fields = formElement.querySelectorAll(
+      `[${FORM_CONFIG.fieldDataAttribute}]`
+    );
+
+    console.log(
+      `🔒 Security: Capturing field descriptions from ${fields.length} fields`
+    );
+
+    // Phase 1: Capture original field descriptions
+    fields.forEach((field) => {
+      const fieldName = field.name || field.getAttribute("name");
+      const fieldDescription = field.getAttribute(
+        FORM_CONFIG.fieldDataAttribute
+      );
+
+      if (fieldName && fieldDescription) {
+        // Store the original description
+        securedDescriptions[fieldName] = fieldDescription;
+        originalDescriptions[fieldName] = fieldDescription;
+
+        console.log(
+          `🔒 Security: Captured description for "${fieldName}": "${fieldDescription.substring(
+            0,
+            50
+          )}..."`
+        );
+      }
+    });
+
+    // Phase 1: Remove original attributes to prevent tampering
+    fields.forEach((field) => {
+      field.removeAttribute(FORM_CONFIG.fieldDataAttribute);
+    });
+
+    // Phase 2: Add decoy attributes as honeypots for tampering detection
+    fields.forEach((field) => {
+      const decoyValue =
+        "TAMPERED_CONTENT_DETECTED_" +
+        Math.random().toString(36).substring(2, 8);
+      field.setAttribute(FORM_CONFIG.fieldDataAttribute, decoyValue);
+    });
+
+    // Phase 2: Generate integrity checksum
+    const checksum = this.generateFieldIntegrityChecksum(originalDescriptions);
+
+    // Phase 2: Use obfuscated property name for storage
+    const obfuscatedPropertyName = btoa(
+      "securedFieldDescriptions_" + Date.now()
+    )
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .substring(0, 16);
+
+    console.log(`🔒 Security: Field descriptions secured successfully`);
+    console.log(
+      `🔒 Security: - Secured ${
+        Object.keys(securedDescriptions).length
+      } field descriptions`
+    );
+    console.log(
+      `🔒 Security: - Added decoy attributes to ${fields.length} fields`
+    );
+    console.log(
+      `🔒 Security: - Generated integrity checksum: ${checksum.substring(
+        0,
+        8
+      )}...`
+    );
+    console.log(
+      `🔒 Security: - Using obfuscated property: ${obfuscatedPropertyName}`
+    );
+
+    return {
+      securedDescriptions: securedDescriptions,
+      propertyName: obfuscatedPropertyName,
+      checksum: checksum,
+      timestamp: Date.now(),
+    };
+  }
+
+  // 🔒 SECURITY: Generate integrity checksum for field descriptions
+  generateFieldIntegrityChecksum(descriptions) {
+    const dataString = JSON.stringify(
+      descriptions,
+      Object.keys(descriptions).sort()
+    );
+    let hash = 0;
+    if (dataString.length === 0) return hash.toString();
+    for (let i = 0; i < dataString.length; i++) {
+      const char = dataString.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return Math.abs(hash).toString(36) + Date.now().toString(36);
+  }
+
+  // 🔒 SECURITY: Verify field description integrity
+  verifyFieldIntegrity(securedDescriptions, expectedChecksum) {
+    const currentChecksum =
+      this.generateFieldIntegrityChecksum(securedDescriptions);
+    // Compare only the hash portion (before timestamp)
+    const currentHash = currentChecksum.split(Date.now().toString(36))[0];
+    const expectedHash = expectedChecksum.split(/\d+$/)[0];
+    return currentHash === expectedHash;
+  }
+
+  // 🔒 SECURITY: Detect tampering attempts via decoy attributes
+  detectTamperingAttempt(formElement) {
+    const fields = formElement.querySelectorAll(
+      `[${FORM_CONFIG.fieldDataAttribute}]`
+    );
+    const tamperingDetected = [];
+
+    fields.forEach((field) => {
+      const currentValue = field.getAttribute(FORM_CONFIG.fieldDataAttribute);
+      const fieldName = field.name || field.getAttribute("name");
+
+      // Check if the decoy value has been modified
+      if (
+        currentValue &&
+        !currentValue.startsWith("TAMPERED_CONTENT_DETECTED_")
+      ) {
+        tamperingDetected.push({
+          field: fieldName,
+          suspiciousValue: currentValue,
+        });
+      }
+    });
+
+    if (tamperingDetected.length > 0) {
+      console.warn(
+        `🚨 Security: Tampering detected in ${tamperingDetected.length} fields:`,
+        tamperingDetected
+      );
+    }
+
+    return tamperingDetected;
+  }
+
+  // 🔒 SECURITY: Secure form purpose attribute against tampering
+  secureFormPurpose(formElement) {
+    const originalPurpose = formElement.getAttribute(
+      FORM_CONFIG.formPurposeAttribute
+    );
+
+    if (!originalPurpose) {
+      console.warn("🔒 Security: No form purpose found to secure");
+      return {
+        securedPurpose: null,
+        propertyName: null,
+        checksum: null,
+      };
+    }
+
+    console.log(
+      `🔒 Security: Securing form purpose: "${originalPurpose.substring(
+        0,
+        50
+      )}..."`
+    );
+
+    // Remove original attribute to prevent DOM tampering
+    formElement.removeAttribute(FORM_CONFIG.formPurposeAttribute);
+
+    // Add decoy attribute for tampering detection
+    const decoyValue =
+      "TAMPERED_PURPOSE_DETECTED_" + Math.random().toString(36).substring(2, 8);
+    formElement.setAttribute(FORM_CONFIG.formPurposeAttribute, decoyValue);
+
+    // Generate integrity checksum
+    const checksum = this.generateFormPurposeChecksum(originalPurpose);
+
+    // Use obfuscated property name for storage
+    const obfuscatedPropertyName = btoa("securedFormPurpose_" + Date.now())
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .substring(0, 14); // Slightly different length to distinguish from field data
+
+    console.log(`🔒 Security: Form purpose secured successfully`);
+    console.log(
+      `🔒 Security: - Using obfuscated property: ${obfuscatedPropertyName}`
+    );
+    console.log(
+      `🔒 Security: - Generated purpose checksum: ${checksum.substring(
+        0,
+        8
+      )}...`
+    );
+
+    return {
+      securedPurpose: originalPurpose,
+      propertyName: obfuscatedPropertyName,
+      checksum: checksum,
+      timestamp: Date.now(),
+    };
+  }
+
+  // 🔒 SECURITY: Generate integrity checksum for form purpose
+  generateFormPurposeChecksum(purpose) {
+    let hash = 0;
+    if (!purpose || purpose.length === 0) return hash.toString();
+
+    for (let i = 0; i < purpose.length; i++) {
+      const char = purpose.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return Math.abs(hash).toString(36) + Date.now().toString(36);
+  }
+
+  // 🔒 SECURITY: Verify form purpose integrity
+  verifyFormPurposeIntegrity(securedPurpose, expectedChecksum) {
+    const currentChecksum = this.generateFormPurposeChecksum(securedPurpose);
+    // Compare only the hash portion (before timestamp)
+    const currentHash = currentChecksum.split(/\d+$/)[0];
+    const expectedHash = expectedChecksum.split(/\d+$/)[0];
+    return currentHash === expectedHash;
+  }
+
+  // 🔒 SECURITY: Detect form purpose tampering
+  detectFormPurposeTampering(formElement) {
+    const currentValue = formElement.getAttribute(
+      FORM_CONFIG.formPurposeAttribute
+    );
+
+    if (
+      currentValue &&
+      !currentValue.startsWith("TAMPERED_PURPOSE_DETECTED_")
+    ) {
+      console.warn(
+        `🚨 Security: Form purpose tampering detected: "${currentValue}"`
+      );
+      return {
+        detected: true,
+        suspiciousValue: currentValue,
+      };
+    }
+
+    return { detected: false };
   }
 
   setupHoneypot(config) {
@@ -388,8 +644,10 @@ class UniversalFormSecurityHandler {
     this.setSubmitButtonLoading(config, true);
 
     try {
-      // Collect form data with field type information
-      const formData = this.collectFormData(config);
+      // Collect form data with field type information and secured form purpose
+      const collectionResult = this.collectFormData(config);
+      const formData = collectionResult.formData;
+      const securedFormPurpose = collectionResult.securedFormPurpose;
 
       // Add metadata for spam detection
       formData.metadata = {
@@ -399,14 +657,14 @@ class UniversalFormSecurityHandler {
         referrer: document.referrer,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         formId: config.formId,
-        formPurpose: config.formPurpose,
+        formPurpose: securedFormPurpose, // 🔒 Use secured form purpose
       };
 
       const payload = {
         turnstileToken: config.turnstileToken,
         formData: formData,
         fieldTypes: formData.fieldTypes, // Include field type information
-        formPurpose: config.formPurpose,
+        formPurpose: securedFormPurpose, // 🔒 Use secured form purpose
       };
 
       console.log("Universal Form Security: Sending to worker", {
@@ -463,6 +721,24 @@ class UniversalFormSecurityHandler {
     const fieldTypes = {};
     const fieldDataDescriptions = {};
 
+    // 🔒 SECURITY: Detect tampering attempts before data collection
+    const tamperingAttempts = this.detectTamperingAttempt(config.formElement);
+    const formPurposeTampering = this.detectFormPurposeTampering(
+      config.formElement
+    );
+
+    if (tamperingAttempts.length > 0 || formPurposeTampering.detected) {
+      console.warn(
+        `🚨 Security: ${tamperingAttempts.length} field tampering attempts detected during form submission`
+      );
+      if (formPurposeTampering.detected) {
+        console.warn(
+          `🚨 Security: Form purpose tampering detected: "${formPurposeTampering.suspiciousValue}"`
+        );
+      }
+      // Log but don't block - we have secured data anyway
+    }
+
     const inputs = config.formElement.querySelectorAll(
       "input, textarea, select"
     );
@@ -480,19 +756,82 @@ class UniversalFormSecurityHandler {
           formData[input.name] = input.value;
         }
 
-        // Collect field type information
+        // Collect field type information (still from DOM as it's less critical)
         const fieldType = input.getAttribute(FORM_CONFIG.fieldTypeAttribute);
-        const fieldData = input.getAttribute(FORM_CONFIG.fieldDataAttribute);
 
         if (fieldType) {
           fieldTypes[input.name] = fieldType;
         }
 
-        if (fieldData) {
-          fieldDataDescriptions[input.name] = fieldData;
+        // 🔒 SECURITY: Use secured field descriptions instead of DOM reading
+        const securityPropertyName = Object.keys(config).find(
+          (key) =>
+            key.match(/^[A-Za-z0-9]{16}$/) &&
+            config[key] &&
+            typeof config[key] === "object"
+        );
+
+        if (securityPropertyName && config[securityPropertyName][input.name]) {
+          fieldDataDescriptions[input.name] =
+            config[securityPropertyName][input.name];
         }
       }
     });
+
+    // 🔒 SECURITY: Verify field description integrity
+    if (config._securityChecksum) {
+      const securityPropertyName = Object.keys(config).find(
+        (key) =>
+          key.match(/^[A-Za-z0-9]{16}$/) &&
+          config[key] &&
+          typeof config[key] === "object"
+      );
+
+      if (securityPropertyName) {
+        const integrityValid = this.verifyFieldIntegrity(
+          config[securityPropertyName],
+          config._securityChecksum
+        );
+
+        if (!integrityValid) {
+          console.error("🚨 Security: Field integrity verification failed!");
+          // Continue with submission but log the security violation
+        } else {
+          console.log("🔒 Security: Field integrity verified successfully");
+        }
+      }
+    }
+
+    // 🔒 SECURITY: Verify form purpose integrity and use secured version
+    let securedFormPurpose = config.formPurpose; // Fallback to original
+
+    if (config._purposeChecksum) {
+      const purposePropertyName = Object.keys(config).find(
+        (key) =>
+          key.match(/^[A-Za-z0-9]{14}$/) &&
+          config[key] &&
+          typeof config[key] === "string"
+      );
+
+      if (purposePropertyName) {
+        const purposeIntegrityValid = this.verifyFormPurposeIntegrity(
+          config[purposePropertyName],
+          config._purposeChecksum
+        );
+
+        if (!purposeIntegrityValid) {
+          console.error(
+            "🚨 Security: Form purpose integrity verification failed!"
+          );
+          // Continue with submission but log the security violation
+        } else {
+          console.log(
+            "🔒 Security: Form purpose integrity verified successfully"
+          );
+          securedFormPurpose = config[purposePropertyName]; // Use secured version
+        }
+      }
+    }
 
     // Add honeypot detection metadata
     if (FORM_CONFIG.enableHoneypot) {
@@ -505,17 +844,30 @@ class UniversalFormSecurityHandler {
       }
     }
 
+    // Add security metadata
+    formData._security_level = "ENHANCED";
+    formData._tampering_attempts =
+      tamperingAttempts.length + (formPurposeTampering.detected ? 1 : 0);
+    formData._form_purpose_tampering = formPurposeTampering.detected;
+
     // Add field type information to form data
     formData.fieldTypes = fieldTypes;
     formData.fieldDataDescriptions = fieldDataDescriptions;
 
     console.log("Universal Form Security: Collected form data", {
-      fieldCount: Object.keys(formData).length - 3, // Exclude metadata, fieldTypes, fieldDataDescriptions
+      fieldCount: Object.keys(formData).length - 5, // Exclude metadata, fieldTypes, fieldDataDescriptions, security fields
       configuredFields: Object.keys(fieldTypes).length,
+      securedDescriptions: Object.keys(fieldDataDescriptions).length,
       hasHoneypot: !!formData._honeypot_field_name,
+      securityLevel: formData._security_level,
+      tamperingAttempts: formData._tampering_attempts,
+      formPurposeSecured: !!securedFormPurpose,
     });
 
-    return formData;
+    return {
+      formData: formData,
+      securedFormPurpose: securedFormPurpose,
+    };
   }
 
   resetTurnstileOnError(config) {
@@ -632,3 +984,4 @@ class UniversalFormSecurityHandler {
 // Initialize when page loads
 console.log("Universal Form Security: Initializing...");
 new UniversalFormSecurityHandler();
+
