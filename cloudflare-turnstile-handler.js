@@ -8,7 +8,6 @@
 // - cf-form="unique-id" (on form element)
 // - cf-form-purpose="description of form purpose for AI context"
 // - cf-turnstile-sitekey="your-site-key"
-// - cf-form-url="https://your-form-handler.com"
 // - cf-field-type="field-type" (on each input)
 // - cf-field-data="expected data description" (on each input)
 // ============================================================================
@@ -89,7 +88,7 @@ class UniversalFormSecurityHandler {
   setupForms() {
     // Find all forms with cf-form attribute
     const formElements = document.querySelectorAll(FORM_CONFIG.formSelector);
-    console.log(`Universal Form Security: Found ${formElements.length} forms`);
+    // console.log(`Universal Form Security: Found ${formElements.length} forms`);
 
     formElements.forEach((formElement) => {
       this.setupSingleForm(formElement);
@@ -115,21 +114,21 @@ class UniversalFormSecurityHandler {
 
     // Validate required attributes
     if (!config.siteKey || !config.formPurpose) {
-      console.error("Universal Form Security: Missing required attributes", {
-        formId: config.formId,
-        hasSiteKey: !!config.siteKey,
-        hasFormPurpose: !!config.formPurpose,
-      });
+      // console.error("Universal Form Security: Missing required attributes", {
+      //   formId: config.formId,
+      //   hasSiteKey: !!config.siteKey,
+      //   hasFormPurpose: !!config.formPurpose,
+      // });
       return;
     }
 
     // Validate field configurations
     const fieldValidation = this.validateFieldConfiguration(formElement);
     if (!fieldValidation.valid) {
-      console.error(
-        "Universal Form Security: Invalid field configuration",
-        fieldValidation.errors
-      );
+      // console.error(
+      //   "Universal Form Security: Invalid field configuration",
+      //   fieldValidation.errors
+      // );
       return;
     }
 
@@ -144,12 +143,12 @@ class UniversalFormSecurityHandler {
       formPurposeSecurity.securedPurpose;
     config._purposeChecksum = formPurposeSecurity.checksum;
 
-    console.log(`Universal Form Security: Setting up form "${config.formId}"`, {
-      purpose: config.formPurpose,
-      fieldsConfigured: fieldValidation.configuredFields,
-      securityLevel: "ENHANCED",
-      securedFields: Object.keys(securityData.securedDescriptions).length,
-    });
+    // console.log(`Universal Form Security: Setting up form "${config.formId}"`, {
+    //   purpose: config.formPurpose,
+    //   fieldsConfigured: fieldValidation.configuredFields,
+    //   securityLevel: "ENHANCED",
+    //   securedFields: Object.keys(securityData.securedDescriptions).length,
+    // });
 
     // Store form config
     this.forms.push(config);
@@ -219,9 +218,9 @@ class UniversalFormSecurityHandler {
       `[${FORM_CONFIG.fieldDataAttribute}]`
     );
 
-    console.log(
-      `🔒 Security: Capturing field descriptions from ${fields.length} fields`
-    );
+    // console.log(
+    //   `🔒 Security: Capturing field descriptions from ${fields.length} fields`
+    // );
 
     // Phase 1: Capture original field descriptions
     fields.forEach((field) => {
@@ -235,12 +234,12 @@ class UniversalFormSecurityHandler {
         securedDescriptions[fieldName] = fieldDescription;
         originalDescriptions[fieldName] = fieldDescription;
 
-        console.log(
-          `🔒 Security: Captured description for "${fieldName}": "${fieldDescription.substring(
-            0,
-            50
-          )}..."`
-        );
+        // console.log(
+        //   `🔒 Security: Captured description for "${fieldName}": "${fieldDescription.substring(
+        //     0,
+        //     50
+        //   )}..."`
+        // );
       }
     });
 
@@ -267,24 +266,24 @@ class UniversalFormSecurityHandler {
       .replace(/[^a-zA-Z0-9]/g, "")
       .substring(0, 16);
 
-    console.log(`🔒 Security: Field descriptions secured successfully`);
-    console.log(
-      `🔒 Security: - Secured ${
-        Object.keys(securedDescriptions).length
-      } field descriptions`
-    );
-    console.log(
-      `🔒 Security: - Added decoy attributes to ${fields.length} fields`
-    );
-    console.log(
-      `🔒 Security: - Generated integrity checksum: ${checksum.substring(
-        0,
-        8
-      )}...`
-    );
-    console.log(
-      `🔒 Security: - Using obfuscated property: ${obfuscatedPropertyName}`
-    );
+    // console.log(`🔒 Security: Field descriptions secured successfully`);
+    // console.log(
+    //   `🔒 Security: - Secured ${
+    //     Object.keys(securedDescriptions).length
+    //   } field descriptions`
+    // );
+    // console.log(
+    //   `🔒 Security: - Added decoy attributes to ${fields.length} fields`
+    // );
+    // console.log(
+    //   `🔒 Security: - Generated integrity checksum: ${checksum.substring(
+    //     0,
+    //     8
+    //   )}...`
+    // );
+    // console.log(
+    //   `🔒 Security: - Using obfuscated property: ${obfuscatedPropertyName}`
+    // );
 
     return {
       securedDescriptions: securedDescriptions,
@@ -344,10 +343,10 @@ class UniversalFormSecurityHandler {
     });
 
     if (tamperingDetected.length > 0) {
-      console.warn(
-        `🚨 Security: Tampering detected in ${tamperingDetected.length} fields:`,
-        tamperingDetected
-      );
+      // console.warn(
+      //   `🚨 Security: Tampering detected in ${tamperingDetected.length} fields:`,
+      //   tamperingDetected
+      // );
     }
 
     return tamperingDetected;
@@ -360,7 +359,7 @@ class UniversalFormSecurityHandler {
     );
 
     if (!originalPurpose) {
-      console.warn("🔒 Security: No form purpose found to secure");
+      // console.warn("🔒 Security: No form purpose found to secure");
       return {
         securedPurpose: null,
         propertyName: null,
@@ -368,12 +367,12 @@ class UniversalFormSecurityHandler {
       };
     }
 
-    console.log(
-      `🔒 Security: Securing form purpose: "${originalPurpose.substring(
-        0,
-        50
-      )}..."`
-    );
+    // console.log(
+    //   `🔒 Security: Securing form purpose: "${originalPurpose.substring(
+    //     0,
+    //     50
+    //   )}..."`
+    // );
 
     // Remove original attribute to prevent DOM tampering
     formElement.removeAttribute(FORM_CONFIG.formPurposeAttribute);
@@ -391,16 +390,16 @@ class UniversalFormSecurityHandler {
       .replace(/[^a-zA-Z0-9]/g, "")
       .substring(0, 14); // Slightly different length to distinguish from field data
 
-    console.log(`🔒 Security: Form purpose secured successfully`);
-    console.log(
-      `🔒 Security: - Using obfuscated property: ${obfuscatedPropertyName}`
-    );
-    console.log(
-      `🔒 Security: - Generated purpose checksum: ${checksum.substring(
-        0,
-        8
-      )}...`
-    );
+    // console.log(`🔒 Security: Form purpose secured successfully`);
+    // console.log(
+    //   `🔒 Security: - Using obfuscated property: ${obfuscatedPropertyName}`
+    // );
+    // console.log(
+    //   `🔒 Security: - Generated purpose checksum: ${checksum.substring(
+    //     0,
+    //     8
+    //   )}...`
+    // );
 
     return {
       securedPurpose: originalPurpose,
@@ -442,9 +441,9 @@ class UniversalFormSecurityHandler {
       currentValue &&
       !currentValue.startsWith("TAMPERED_PURPOSE_DETECTED_")
     ) {
-      console.warn(
-        `🚨 Security: Form purpose tampering detected: "${currentValue}"`
-      );
+      // console.warn(
+      //   `🚨 Security: Form purpose tampering detected: "${currentValue}"`
+      // );
       return {
         detected: true,
         suspiciousValue: currentValue,
@@ -500,9 +499,9 @@ class UniversalFormSecurityHandler {
       config.formElement.firstChild
     );
 
-    console.log(
-      `Universal Form Security: Added honeypot field "${randomFieldName}"`
-    );
+    // console.log(
+    //   `Universal Form Security: Added honeypot field "${randomFieldName}"`
+    // );
   }
 
   setupPageUrlField(config) {
@@ -579,7 +578,7 @@ class UniversalFormSecurityHandler {
       callback: (token) => {
         config.turnstileToken = token;
         this.enableSubmitButton(config);
-        console.log("Universal Form Security: Turnstile token received");
+        // console.log("Universal Form Security: Turnstile token received");
       },
       "error-callback": () => {
         config.turnstileToken = null;
@@ -588,12 +587,12 @@ class UniversalFormSecurityHandler {
           config,
           "Security verification failed. Please try again."
         );
-        console.error("Universal Form Security: Turnstile error");
+        // console.error("Universal Form Security: Turnstile error");
       },
       "expired-callback": () => {
         config.turnstileToken = null;
         this.disableSubmitButton(config);
-        console.log("Universal Form Security: Turnstile token expired");
+        // console.log("Universal Form Security: Turnstile token expired");
       },
       theme: FORM_CONFIG.turnstileTheme,
       size: FORM_CONFIG.turnstileSize,
@@ -629,7 +628,7 @@ class UniversalFormSecurityHandler {
   }
 
   async handleFormSubmit(config) {
-    console.log("Universal Form Security: Form submission started");
+    // console.log("Universal Form Security: Form submission started");
 
     // Clear any previous errors
     this.hideError(config);
@@ -667,11 +666,11 @@ class UniversalFormSecurityHandler {
         formPurpose: securedFormPurpose, // 🔒 Use secured form purpose
       };
 
-      console.log("Universal Form Security: Sending to worker", {
-        formId: config.formId,
-        fieldCount: Object.keys(formData).length - 2, // Exclude metadata and fieldTypes
-        hasFieldTypes: !!formData.fieldTypes,
-      });
+      // console.log("Universal Form Security: Sending to worker", {
+      //   formId: config.formId,
+      //   fieldCount: Object.keys(formData).length - 2, // Exclude metadata and fieldTypes
+      //   hasFieldTypes: !!formData.fieldTypes,
+      // });
 
       // Submit to Cloudflare Worker
       const response = await fetch(this.workerUrl, {
@@ -685,13 +684,13 @@ class UniversalFormSecurityHandler {
       const result = await response.json();
 
       if (result.success) {
-        console.log("Universal Form Security: Form submitted successfully");
+        // console.log("Universal Form Security: Form submitted successfully");
         this.handleSuccess(config);
       } else {
-        console.log(
-          "Universal Form Security: Form submission blocked",
-          result.error
-        );
+        // console.log(
+        //   "Universal Form Security: Form submission blocked",
+        //   result.error
+        // );
 
         // Reset Turnstile on error to generate new token
         this.resetTurnstileOnError(config);
@@ -702,7 +701,7 @@ class UniversalFormSecurityHandler {
         );
       }
     } catch (error) {
-      console.error("Universal Form Security: Network error", error);
+      // console.error("Universal Form Security: Network error", error);
 
       // Reset Turnstile on error to generate new token
       this.resetTurnstileOnError(config);
@@ -728,14 +727,14 @@ class UniversalFormSecurityHandler {
     );
 
     if (tamperingAttempts.length > 0 || formPurposeTampering.detected) {
-      console.warn(
-        `🚨 Security: ${tamperingAttempts.length} field tampering attempts detected during form submission`
-      );
-      if (formPurposeTampering.detected) {
-        console.warn(
-          `🚨 Security: Form purpose tampering detected: "${formPurposeTampering.suspiciousValue}"`
-        );
-      }
+      // console.warn(
+      //   `🚨 Security: ${tamperingAttempts.length} field tampering attempts detected during form submission`
+      // );
+      // if (formPurposeTampering.detected) {
+      //   console.warn(
+      //     `🚨 Security: Form purpose tampering detected: "${formPurposeTampering.suspiciousValue}"`
+      //   );
+      // }
       // Log but don't block - we have secured data anyway
     }
 
@@ -794,10 +793,10 @@ class UniversalFormSecurityHandler {
         );
 
         if (!integrityValid) {
-          console.error("🚨 Security: Field integrity verification failed!");
+          // console.error("🚨 Security: Field integrity verification failed!");
           // Continue with submission but log the security violation
         } else {
-          console.log("🔒 Security: Field integrity verified successfully");
+          // console.log("🔒 Security: Field integrity verified successfully");
         }
       }
     }
@@ -820,14 +819,14 @@ class UniversalFormSecurityHandler {
         );
 
         if (!purposeIntegrityValid) {
-          console.error(
-            "🚨 Security: Form purpose integrity verification failed!"
-          );
+          // console.error(
+          //   "🚨 Security: Form purpose integrity verification failed!"
+          // );
           // Continue with submission but log the security violation
         } else {
-          console.log(
-            "🔒 Security: Form purpose integrity verified successfully"
-          );
+          // console.log(
+          //   "🔒 Security: Form purpose integrity verified successfully"
+          // );
           securedFormPurpose = config[purposePropertyName]; // Use secured version
         }
       }
@@ -854,15 +853,15 @@ class UniversalFormSecurityHandler {
     formData.fieldTypes = fieldTypes;
     formData.fieldDataDescriptions = fieldDataDescriptions;
 
-    console.log("Universal Form Security: Collected form data", {
-      fieldCount: Object.keys(formData).length - 5, // Exclude metadata, fieldTypes, fieldDataDescriptions, security fields
-      configuredFields: Object.keys(fieldTypes).length,
-      securedDescriptions: Object.keys(fieldDataDescriptions).length,
-      hasHoneypot: !!formData._honeypot_field_name,
-      securityLevel: formData._security_level,
-      tamperingAttempts: formData._tampering_attempts,
-      formPurposeSecured: !!securedFormPurpose,
-    });
+    // console.log("Universal Form Security: Collected form data", {
+    //   fieldCount: Object.keys(formData).length - 5, // Exclude metadata, fieldTypes, fieldDataDescriptions, security fields
+    //   configuredFields: Object.keys(fieldTypes).length,
+    //   securedDescriptions: Object.keys(fieldDataDescriptions).length,
+    //   hasHoneypot: !!formData._honeypot_field_name,
+    //   securityLevel: formData._security_level,
+    //   tamperingAttempts: formData._tampering_attempts,
+    //   formPurposeSecured: !!securedFormPurpose,
+    // });
 
     return {
       formData: formData,
@@ -880,9 +879,9 @@ class UniversalFormSecurityHandler {
           window.turnstile.reset();
         }
 
-        console.log("Universal Form Security: Turnstile reset successful");
+        // console.log("Universal Form Security: Turnstile reset successful");
       } catch (error) {
-        console.warn("Universal Form Security: Turnstile reset failed", error);
+        // console.warn("Universal Form Security: Turnstile reset failed", error);
       }
 
       // Clear the current token and disable submit button until new token received
@@ -892,9 +891,9 @@ class UniversalFormSecurityHandler {
       // Re-render turnstile if it seems stuck
       setTimeout(() => {
         if (!config.turnstileToken) {
-          console.log(
-            "Universal Form Security: Re-rendering Turnstile after reset"
-          );
+          // console.log(
+          //   "Universal Form Security: Re-rendering Turnstile after reset"
+          // );
           this.renderTurnstile(config);
         }
       }, 1000);
@@ -942,9 +941,9 @@ class UniversalFormSecurityHandler {
       config.errorElement.classList.remove(FORM_CONFIG.hideClass);
     } else {
       // Fallback: alert (not ideal but ensures user sees error)
-      console.error(
-        "Universal Form Security: No error display configured, using alert"
-      );
+      // console.error(
+      //   "Universal Form Security: No error display configured, using alert"
+      // );
       alert(message);
     }
   }
@@ -958,7 +957,7 @@ class UniversalFormSecurityHandler {
   }
 
   handleSuccess(config) {
-    console.log("Universal Form Security: Form submission successful");
+    // console.log("Universal Form Security: Form submission successful");
 
     // Hide the form
     config.formElement.style.display = "none";
@@ -966,11 +965,11 @@ class UniversalFormSecurityHandler {
     // Show success element if it exists
     if (config.successElement) {
       config.successElement.style.display = "block";
-      console.log("Universal Form Security: Success message displayed");
+      // console.log("Universal Form Security: Success message displayed");
     } else {
-      console.warn(
-        'Universal Form Security: No success element found with cf-form-submit="success"'
-      );
+      // console.warn(
+      //   'Universal Form Security: No success element found with cf-form-submit="success"'
+      // );
     }
 
     // Reset Turnstile for potential reuse
@@ -982,6 +981,6 @@ class UniversalFormSecurityHandler {
 }
 
 // Initialize when page loads
-console.log("Universal Form Security: Initializing...");
+// console.log("Universal Form Security: Initializing...");
 new UniversalFormSecurityHandler();
 
